@@ -6,7 +6,7 @@ function _newRedisClient(port, server) {
   port = port || process.env.REDIS_PORT;
   server = server || process.env.REDIS_URL;
 
-  var client = redis.createClient(port, server);
+  var client = redis.createClient(process.env.REDISCLOUD_URL);
 
   client.once('ready', function() {
     console.log('Redis is connected');
