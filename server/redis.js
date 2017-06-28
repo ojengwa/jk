@@ -1,20 +1,27 @@
 'use strict';
 
 var redis = require('redis');
+var url = require('url');
 
-function _newRedisClient(port, server) {
-  port = port || process.env.REDIS_PORT;
-  server = server || process.env.REDIS_URL;
+function _newRedisClient(port, host) {
+  var client;
 
-  var client = redis.createClient(process.env.REDISCLOUD_URL);
+  if (process.env.REDIS_URL) {
+    var rtg = url.parse(process.env.REDIS_URL)
+    client = redis.createClient(rtg.port, rtg.hostname)
+
+    client.auth(rtg.auth.split(':')[1])
+  } else {
+    client = redis.createClient(port, host)
+  }
 
   client.once('ready', function() {
     console.log('Redis is connected');
   });
 
-  // client.on('error', function (err) {
-  //   console.log('Redis error:', err);
-  // });
+  client.on('error', function(err) {
+    console.log('Redis error:', err);
+  });
 
   client.on('reconnecting', function() {
     console.log('Redis is reconnecting');
