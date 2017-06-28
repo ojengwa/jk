@@ -65,7 +65,7 @@ module.exports = React.createClass({
             <li className={cx({ active: this.props.view === 'history' })}><a href onClick={this._navigate('history')}>History</a></li>
             <li className={cx({ active: this.props.view === 'settings' })}><a href onClick={this._navigate('settings')}><i className="fa fa-cogs"></i></a></li>
           </ul>
-          <h3 className="masthead-brand">Jukebox</h3>
+          <h3 className="masthead-brand"><img src="http://www.thispresenthouse.org/tphlekki2/wp-content/uploads/2016/04/logo.png" /></h3>
           <h3 className="fa fa-music"></h3>
         </div>
       </div>
