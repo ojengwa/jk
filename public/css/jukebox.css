@@ -6,7 +6,7 @@
 a,
 a:focus,
 a:hover {
-  color: #fff;
+  color: #e84c3d;
 }
 
 /* Custom default button */
@@ -15,8 +15,8 @@ a:hover {
 .btn-default:focus {
   color: #333;
   text-shadow: none; /* Prevent inheritence from `body` */
-  background-color: #fff;
-  border: 1px solid #fff;
+  background-color: #e84c3d;
+  border: 1px solid #e84c3d;
 }
 
 
@@ -29,8 +29,8 @@ body {
   min-height: 100%;
 }
 body {
-  color: #fff;
-  background-color:#2b3e50;
+  color: #e84c3d;
+  background-color:#fff;
 }
 
 /* Padding for spacing */
@@ -75,20 +75,20 @@ body {
   margin: 10px 0;
   font-size: 16px;
   font-weight: bold;
-  color: #fff; /* IE8 proofing */
-  color: rgba(255,255,255,.75);
+  color: #e84c3d; /* IE8 proofing */
+  color: rgba(232,76,61,.75);
   border-bottom: 2px solid transparent;
 }
 .masthead-nav > li > a:hover,
 .masthead-nav > li > a:focus {
   background-color: transparent;
-  border-bottom-color: rgba(255,255,255,.25);
+  border-bottom-color: rgba(232,76,61,.25);
 }
 .masthead-nav > .active > a,
 .masthead-nav > .active > a:hover,
 .masthead-nav > .active > a:focus {
-  color: #fff;
-  border-bottom-color: #fff;
+  color: #e84c3d;
+  border-bottom-color: #e84c3d;
 }
 
 .masthead-nav > li.volume {
@@ -96,8 +96,8 @@ body {
   margin: 10px 0;
   font-size: 16px;
   font-weight: bold;
-  color: #fff; /* IE8 proofing */
-  color: rgba(255,255,255,.75);
+  color: #e84c3d; /* IE8 proofing */
+  color: rgba(232,76,61,.75);
   border-bottom: 2px solid transparent;
 }
 .masthead-nav > li.volume > .slider {
@@ -193,7 +193,7 @@ body {
   position: relative;
   bottom: 0;
   color: #999; /* IE8 proofing */
-  color: rgba(255,255,255,.5);
+  color: rgba(232,76,61,.5);
 }
 
 .mastfoot .boxed {
@@ -211,4 +211,10 @@ body {
   width: 50px;
   /*-webkit-transform: rotateZ(-90deg);*/
           /*transform: rotateZ(-90deg);*/
+}
+.progress {
+  background-color: #bbb;
+}
+.input-group-addon {
+  background-color: #d9534f;
 }
