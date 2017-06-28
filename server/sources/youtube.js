@@ -48,17 +48,20 @@ YoutubeTrack.prototype.play = function play() {
 
   var ytStream = ytdl(this.streamUrl, ytOpts);
   ytStream
-    .on('info', function (_, format) {
+    .on('info', function(_, format) {
       totalLength = parseInt(format.size, 10);
     })
-    .on('data', function (chunk) {
+    .on('data', function(chunk) {
       currentLength += chunk.length;
-      this.emit('progress', { current: currentLength, total: totalLength });
+      this.emit('progress', {
+        current: currentLength,
+        total: totalLength
+      });
     }.bind(this))
-    .on('error', function () {
+    .on('error', function() {
       ytStream.push(null);
     })
-    .on('end', function () {
+    .on('end', function() {
       this.end();
     });
 
@@ -91,16 +94,17 @@ function resolve(trackUrl) {
   var url = urlParser.parse(trackUrl, true, true);
 
   unirest.get('http://gdata.youtube.com/feeds/api/videos/' + url.query.v)
-  .query({
-    v: 2,
-    alt: 'json'
-  })
-  .end(function (response) {
-    if (response.error) return deferred.reject(response.error);
-    var track = response.body.entry;
-    track.bitrate = 128 * 1000;
-    deferred.resolve(new YoutubeTrack(track));
-  });
+    .query({
+      v: 3,
+      key: 'AIzaSyBb_ZqAqgZVlrF4yBQEv_3q-MI7AYBIttQ',
+      alt: 'json'
+    })
+    .end(function(response) {
+      if (response.error) return deferred.reject(response.error);
+      var track = response.body.entry;
+      track.bitrate = 128 * 1000;
+      deferred.resolve(new YoutubeTrack(track));
+    });
 
   return deferred.promise;
 }
@@ -108,19 +112,19 @@ function resolve(trackUrl) {
 /**
  * Private helpers
  */
- YoutubeTrack.prototype._initFromExternal = function (track) {
-  this.title     = track.title.$t;
+YoutubeTrack.prototype._initFromExternal = function(track) {
+  this.title = track.title.$t;
   if (track.author && track.author[0]) {
     this.artist = track.author[0].name.$t;
   }
-  this.duration  = track.media$group.yt$duration.seconds * 1000;
-  this.url       = track.link[0].href;
+  this.duration = track.media$group.yt$duration.seconds * 1000;
+  this.url = track.link[0].href;
   this.streamUrl = track.link[0].href;
-  this.cover     = track.media$group.media$thumbnail[1].url;
+  this.cover = track.media$group.media$thumbnail[1].url;
   this.createdAt = new Date();
-  this.platform  = 'youtube';
+  this.platform = 'youtube';
 };
 
-YoutubeTrack.prototype._initFromInternal = function () {
+YoutubeTrack.prototype._initFromInternal = function() {
   YoutubeTrack.super_.apply(this, arguments);
 };
