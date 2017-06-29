@@ -66,7 +66,7 @@ YoutubeTrack.prototype.play = function play() {
     });
 
   return new Transcoder(ytStream)
-    .custom('vn') // no video
+    // .custom('vn') // no video
     .audioCodec('libmp3lame')
     .sampleRate(format.sampleRate)
     .channels(format.channels)
