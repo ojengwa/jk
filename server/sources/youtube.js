@@ -3,8 +3,10 @@
 var util = require('util');
 var urlParser = require('url');
 var Track = require('../track');
+var logger = require('../logger');
 var Q = require('q');
 var unirest = require('unirest');
+var config = require('../config');
 var ytdl = require('ytdl-core');
 var Transcoder = require('stream-transcoder');
 var format = require('../config').format;
@@ -44,6 +46,7 @@ YoutubeTrack.prototype.play = function play() {
     quality: 'highest',
     // filter: function(format) { return format.container === 'mp4'; }
   };
+  console.log(this, '<- this')
   if (this.position) ytOpts.range = this.position + '-';
 
   var ytStream = ytdl(this.streamUrl, ytOpts);
@@ -81,6 +84,7 @@ YoutubeTrack.prototype.play = function play() {
  */
 function detectOnInput(input) {
   var url = urlParser.parse(input, true, true);
+
   if (!url.hostname) return false;
   return (url.hostname.indexOf('youtube.com') > -1);
 }
@@ -90,16 +94,19 @@ function detectOnInput(input) {
  * Returns a Promise resolving to a YoutubeTrack.
  */
 function resolve(trackUrl) {
+  logger.log(trackUrl, 'hee')
   var deferred = Q.defer();
   var url = urlParser.parse(trackUrl, true, true);
 
-  unirest.get('http://gdata.youtube.com/feeds/api/videos/' + url.query.v)
+  unirest.get('https://www.googleapis.com/youtube/v3/videos')
     .query({
-      v: 3,
-      key: 'AIzaSyBb_ZqAqgZVlrF4yBQEv_3q-MI7AYBIttQ',
-      alt: 'json'
+      id: url.query.v,
+      key: config.youtube.clientId,
+      alt: 'json',
+      part: 'snippet'
     })
     .end(function(response) {
+      logger.log(response.body.items);
       if (response.error) return deferred.reject(response.error);
       var track = response.body.entry;
       track.bitrate = 128 * 1000;
