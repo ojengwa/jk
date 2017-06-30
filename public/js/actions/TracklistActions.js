@@ -24,12 +24,12 @@ var TracklistActions = {
     });
   },
   addUrl: function(trackUrl) {
-    console.log(trackUrl)
+
     api.tracks.post({
       url: trackUrl
     }, function(err) {
       if (err) {
-        console.log(err);
+
         return console.error(err);
       }
     });
