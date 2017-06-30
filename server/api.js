@@ -20,12 +20,14 @@ var votes = require('./services/votes');
 var current = require('./services/current');
 var history = require('./services/history');
 
-module.exports = function (app, playerManager) {
+module.exports = function(app, playerManager) {
   playerManager.stream.on('data', _sendChunk);
 
   app.use(express.static(__dirname + '/../public'));
   app.use(morganLog('dev'));
-  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.urlencoded({
+    extended: true
+  }));
   app.use(bodyParser.json());
   app.use(cookieParser('lagavulin'));
   app.use(uniqueVisitor);
@@ -44,6 +46,7 @@ module.exports = function (app, playerManager) {
     'http://www.youtube.com',
     'https://www.youtube.com'
   ];
+
   function _allowCrossDomain(req, res, next) {
     if (allowedHosts.indexOf(req.headers.origin) !== -1) {
       res.header('Access-Control-Allow-Origin', req.headers.origin);
@@ -55,90 +58,91 @@ module.exports = function (app, playerManager) {
   }
 
   app.route('/player')
-  .get(function (req, res) {
-    res.send(playerState);
-  })
-  .post(function (req, res) {
-    if (!playerState.playing) playerManager.start();
-    res.sendStatus(201);
-  })
-  .delete(function (req, res) {
-    if (playerState.playing) playerManager.stop();
-    res.sendStatus(201);
-  });
+    .get(function(req, res) {
+      res.send(playerState);
+    })
+    .post(function(req, res) {
+      if (!playerState.playing) playerManager.start();
+      res.sendStatus(201);
+    })
+    .delete(function(req, res) {
+      if (playerState.playing) playerManager.stop();
+      res.sendStatus(201);
+    });
 
   app.route('/tracks')
-  .options(_allowCrossDomain)
-  .get(function (req, res) {
-    tracklist.find({}, function (err, tracks) {
-      if (err) return res.status(503).send(err.message);
-      res.send(tracks);
-    });
-  })
-  .post(_allowCrossDomain, function (req, res) {
-    if (!req.body.url) return res.status(400).send('You need to provide a track URL.');
-    trackBuilder.fromString(req.body.url)
-    .then(function (trackOrTracks) {
-      res.status(201).send(trackOrTracks);
+    .options(_allowCrossDomain)
+    .get(function(req, res) {
+      tracklist.find({}, function(err, tracks) {
+        if (err) return res.status(503).send(err.message);
+        res.send(tracks);
+      });
+    })
+    .post(_allowCrossDomain, function(req, res) {
+      if (!req.body.url) return res.status(400).send('You need to provide a track URL.');
+      trackBuilder.fromString(req.body.url)
+        .then(function(trackOrTracks) {
+          logger.log(trackOrTracks, 'response');
+          res.status(201).send(trackOrTracks);
 
-      if (Array.isArray(trackOrTracks)) {
-        trackOrTracks.forEach(function (track) {
-          tracklist.create(track);
+          if (Array.isArray(trackOrTracks)) {
+            trackOrTracks.forEach(function(track) {
+              tracklist.create(track);
+            });
+          } else {
+            tracklist.create(trackOrTracks);
+          }
+        }, function(err) {
+          res.status(500).send(err.message);
         });
-      } else {
-        tracklist.create(trackOrTracks);
-      }
-    }, function (err) {
-      res.status(500).send(err.message);
     });
-  });
 
   app.route('/current')
-  .get(function (req, res) {
-    current.get(function (err, track) {
-      if (err) return res.status(500).send(err);
-      if (!track) return res.send({});
-      res.send(track);
-    });
-  })
-  .delete(function (req, res) {
-    nextTrack(function (err) {
-      if (err) return res.status(500).send(err);
-      playerManager.stop();
-      playerManager.start();
-    });
-  });
-
-  app.route('/votes')
-  .get(function (req, res) {
-    votes.count(function (err, votesCount) {
-      if (err) return logger.log(err);
-      listeners.count(function (err, listenersCount) {
-        if (err) return logger.log(err);
-        res.send({
-          favorable: votesCount,
-          total: Math.round(listenersCount / 2)
-        });
+    .get(function(req, res) {
+      current.get(function(err, track) {
+        if (err) return res.status(500).send(err);
+        if (!track) return res.send({});
+        res.send(track);
+      });
+    })
+    .delete(function(req, res) {
+      nextTrack(function(err) {
+        if (err) return res.status(500).send(err);
+        playerManager.stop();
+        playerManager.start();
       });
     });
-  })
-  .post(function (req, res) {
-    var identifier = req.cookies.uid || req.ip; // shouldn't be `req.ip` but...
-    votes.create(identifier, function (err, newCount) {
-      if (err) return res.status(500).send(err);
-      res.sendStatus(201);
-      if (newCount > 0) _checkVotesNext();
-    });
-  });
 
-  app.get('/history', function (req, res) {
-    history.find({}, function (err, tracks) {
+  app.route('/votes')
+    .get(function(req, res) {
+      votes.count(function(err, votesCount) {
+        if (err) return logger.log(err);
+        listeners.count(function(err, listenersCount) {
+          if (err) return logger.log(err);
+          res.send({
+            favorable: votesCount,
+            total: Math.round(listenersCount / 2)
+          });
+        });
+      });
+    })
+    .post(function(req, res) {
+      var identifier = req.cookies.uid || req.ip; // shouldn't be `req.ip` but...
+      votes.create(identifier, function(err, newCount) {
+        if (err) return res.status(500).send(err);
+        res.sendStatus(201);
+        if (newCount > 0) _checkVotesNext();
+      });
+    });
+
+  app.get('/history', function(req, res) {
+    history.find({}, function(err, tracks) {
       if (err) return res.status(500).send(err.message);
       res.send(tracks);
     });
   });
 
-  app.get('/stream', function (req, res) {
+  app.get('/stream', function(req, res) {
     res.set({
       'Content-Type': 'audio/mpeg',
       'Transfer-Encoding': 'chunked',
@@ -158,15 +162,15 @@ module.exports = function (app, playerManager) {
   });
 
   /**
-  * Check whether we need to skip the track.
-  */
+   * Check whether we need to skip the track.
+   */
   function _checkVotesNext(callback) {
-    votes.count(function (err, votesCount) {
+    votes.count(function(err, votesCount) {
       if (err) return callback(err);
-      listeners.count(function (err, listenersCount) {
+      listeners.count(function(err, listenersCount) {
         if (err) return callback(err);
         if (votesCount < Math.round(listenersCount / 2)) return;
-        nextTrack(function (err) {
+        nextTrack(function(err) {
           if (err) return callback(err);
           playerManager.stop();
           playerManager.start();
@@ -179,7 +183,7 @@ module.exports = function (app, playerManager) {
 
 // Listeners are 'res' objects
 function _sendChunk(chunk) {
-  listeners.getAllSync().forEach(function (listener) {
+  listeners.getAllSync().forEach(function(listener) {
     listener.write(chunk);
   });
 }
