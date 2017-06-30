@@ -34,7 +34,7 @@ FileTrack.prototype.play = function play() {
   var options = {};
   if (this.position) options.start = this.position;
 
-  var output = new Throttle(320*1000/8); // throttle at 128kbps
+  var output = new Throttle(320 * 1000 / 8); // throttle at 128kbps
 
   fs.createReadStream(parsedUrl.path, options)
     .pipe(output);
@@ -42,12 +42,18 @@ FileTrack.prototype.play = function play() {
   var currentLength = this.position || 0;
   var totalLength = this.size;
 
-  output.on('data', function (chunk) {
+  output.on('data', function(chunk) {
     currentLength += chunk.length;
-    this.emit('progress', { current: currentLength, total: totalLength });
+    this.emit('progress', {
+      current: currentLength,
+      total: totalLength
+    });
   }.bind(this));
 
-  this.emit('progress', { current: currentLength, total: totalLength });
+  this.emit('progress', {
+    current: currentLength,
+    total: totalLength
+  });
 
   return output;
 };
@@ -69,7 +75,7 @@ function resolve(trackUrl) {
   var deferred = Q.defer();
   var url = urlParser.parse(trackUrl, true, true);
 
-  ffprobe(url.path, function (err, results) {
+  ffprobe(url.path, function(err, results) {
     if (err) return deferred.reject(err);
     var track = {
       title: results.filename,
@@ -82,7 +88,7 @@ function resolve(trackUrl) {
     var stream = fs.createReadStream(url.path);
     var parser = mm(stream);
 
-    parser.on('metadata', function (metadata) {
+    parser.on('metadata', function(metadata) {
       track.title = metadata.title;
       track.artist = metadata.artist.join(' ');
       var pic = metadata.picture[0];
@@ -94,7 +100,7 @@ function resolve(trackUrl) {
       }
     });
 
-    parser.on('done', function (err) {
+    parser.on('done', function(err) {
       if (err) return deferred.reject(err);
       stream.destroy();
       deferred.resolve(new FileTrack(track));
@@ -107,18 +113,18 @@ function resolve(trackUrl) {
 /**
  * Private helpers
  */
-FileTrack.prototype._initFromExternal = function (track) {
-  this.title     = track.title;
-  this.artist    = track.artist;
-  this.duration  = track.duration;
+FileTrack.prototype._initFromExternal = function(track) {
+  this.title = track.title;
+  this.artist = track.artist;
+  this.duration = track.duration;
   this.streamUrl = track.path;
-  this.cover     = track.cover;
+  this.cover = track.cover;
   this.createdAt = new Date();
-  this.platform  = 'file';
-  this.bitrate   = track.bitrate;
-  this.size      = track.size;
+  this.platform = 'file';
+  this.bitrate = track.bitrate;
+  this.size = track.size;
 };
 
-FileTrack.prototype._initFromInternal = function () {
+FileTrack.prototype._initFromInternal = function() {
   FileTrack.super_.apply(this, arguments);
 };
