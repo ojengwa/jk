@@ -2,8 +2,11 @@
 
 var Q = require('q');
 var config = require('./config');
+var logger = require('./logger');
 var sourcesMap = {};
-var sources = config.sources.map(function (sourceName) {
+
+var sources = config.sources.map(function(sourceName) {
+
   sourcesMap[sourceName] = require('./sources/' + sourceName);
   return require('./sources/' + sourceName);
 });
@@ -21,7 +24,8 @@ module.exports = {
  */
 function fromString(input) {
   var source;
-  var found = sources.some(function (src) {
+  var found = sources.some(function(src) {
+
     if (src.detectOnInput(input)) {
       source = src;
       return true;
@@ -29,7 +33,7 @@ function fromString(input) {
   });
 
   if (!found) {
-    return Q.fcall(function () {
+    return Q.fcall(function() {
       throw new Error('The input does not match any sources.');
     });
   }
